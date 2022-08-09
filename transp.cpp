@@ -14,9 +14,9 @@ void run_4_leads();
 
 int main(){
 
-	//~ run_2_leads();
+	run_2_leads();
 	//~ run_3_leads();
-	run_4_leads();
+	//~ run_4_leads();
 	
 }
 
@@ -47,19 +47,24 @@ void run_2_leads(){
 		}
 	);
 	
-	syst.choose_lead_calc_mode(Lead_mode::ANALYTICAL); // ANALYTICAL or FDM are implemented, but FEM not implemented
-	double energy;
+	syst.choose_lead_calc_mode(Lead_mode::FDM); // ANALYTICAL or FDM are implemented, but FEM not implemented
+	double energy = 0.005;
 	std::ofstream file; 
   	file.open("T2.txt");
   	syst.fill_Hamiltonian(
-  		[&](double x, double y) -> double { // here we define a QPC potential
+  		[&](double x, double y) -> double { 
+			// here we define a QPC potential
 			return 0.1 * std::exp(-(std::pow((x - xmax)/20,2)+std::pow(y/(20),2)))
 				 + 0.1 * std::exp(-(std::pow((x - xmin)/20,2)+std::pow(y/(20),2))); },
+			// here we define a finite potential well
+			//~ return 0.01 * (std::tanh(-(x + xmax/2)/5) + 
+						  //~ std::tanh((x - xmax/2)/5) + 2); },
 		[&](double x, double y){return fabs(x-xmin)<1e-2 || fabs(x-xmax)<1e-2;} // the side edges have Dirichlet b.c.
 	);
 	
 	// scan the incident electron energy
   	for(energy = 0.0001; energy < 0.005; energy += 0.0001){
+  	//~ for(energy = 0.002; energy < 0.01; energy += 0.0002){
 		syst.solve(energy, {0});
 		
 		double Ttot01 = 0;

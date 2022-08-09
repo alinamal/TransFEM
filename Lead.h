@@ -95,7 +95,7 @@ private:
 	/// Calculates the modes at energy E. For Leadmode::ANALYTICAL is works only  with V=0 in the lead
 	void calc_modes(double E); 
 	/// Calculates the integrals of phi_i * mode 
-	void calc_Ni(double E); 
+	void calc_Ni(double E, std::function<double(double x, double y)> potential); 
 	
 	/// The calculation method for modes
     std::complex<double>(Lead::*mode_function)(double, int);
@@ -104,8 +104,8 @@ private:
 	std::complex<double> mode_fdm(double xi, int m); ///< finite different method
 	
 	/// Calculates modes with finite difference method
-	void calculate_modes_fdm(double E);
+	void calculate_modes_fdm(double E, std::function<double(double x, double y)> potential);
 	/// Calculates dispersion relation of the lead in the 1D Brillouin zone with finite difference method
-	void calc_dispersion_relation();
+	void calc_dispersion_relation(std::function<double(double x, double y)> potential);
 };
 

@@ -13,14 +13,6 @@ using Eigen::MatrixXcd;
 Mes::Mes(std::string filename){
 
     no_leads = 0;
-    //~ const char* filename = "Meshes/Lab5KwadLow.msh";
-    //~ const char* filename = "Meshes/KwadLow10.msh";
-    //~ const char* filename = "Meshes/Rectangle10.msh";
-    //~ const char* filename = "Meshes/Rectangle_with_leads.msh";
-    //~ const char* filename = "Meshes/Rectangle5.msh";
-    //~ const char* filename = "Meshes/KwadLow20.msh";
-    //~ const char* filename = "Meshes/Lab3Zad2014.msh";
-    //~ const char* filename = "Meshes/siatka_z_cnt_adapted.msh";
     
     double **vnodes;
     int *vflags;
@@ -227,9 +219,9 @@ void Mes::solve(double energy, std::vector<int> lead_in_list){
 			if(l != lead_idx){
 				for(int idx_in = 0; idx_in < leads[lead_idx].no_modes; ++idx_in){
 					
-					std::cout << ", no_modes= ";
-					for(int li = 0; li < no_leads; li++) std::cout << leads[li].no_modes << ", ";
-					std::cout << std::endl;
+					//~ std::cout << ", no_modes= ";
+					//~ for(int li = 0; li < no_leads; li++) std::cout << leads[li].no_modes << ", ";
+					//~ std::cout << std::endl;
 					
 					fill_F(idx_in, lead_idx);
 					for(int i = 0; i < Np; ++i){
@@ -244,7 +236,7 @@ void Mes::solve(double energy, std::vector<int> lead_in_list){
 					}
 
 					// calculate T, R
-					std::cout << "T: " << std::endl;
+					//~ std::cout << "T: " << std::endl;
 					double Tn = 0;
 					for (int m = 1; m <= leads[l].no_modes; ++m){
 						std::complex<double> tm =0;
@@ -265,10 +257,10 @@ void Mes::solve(double energy, std::vector<int> lead_in_list){
 						
 						SM[lead_idx][l].Tnm[idx_in][m-1] = tm * std::sqrt(std::abs(leads[l].ki[m-1] / leads[lead_idx].ki[idx_in]));
 					}
-					std::cout << "Tn= " << Tn << std::endl;
+					//~ std::cout << "Tn= " << Tn << std::endl;
 					Ttot += Tn;
 
-					std::cout << "R: " << std::endl;
+					//~ std::cout << "R: " << std::endl;
 					double Rn = 0;
 					for (int m = 1; m <= leads[lead_idx].no_modes; ++m){
 						std::complex<double> rm =0;
@@ -291,7 +283,7 @@ void Mes::solve(double energy, std::vector<int> lead_in_list){
 						
 						SM[lead_idx][lead_idx].Tnm[idx_in][m-1] = rm * std::sqrt(std::abs(leads[lead_idx].ki[m-1] / leads[lead_idx].ki[idx_in]));
 					}
-					std::cout << "Rn= " << Rn << ", Tn+Rn= " << Tn + Rn << std::endl;
+					//~ std::cout << "Rn= " << Rn << ", Tn+Rn= " << Tn + Rn << std::endl;
 					Rtot += Rn;
 				}
 				std::cout << "Ttot= " << Ttot << std::endl;
@@ -412,6 +404,7 @@ void Mes::save_mesh(){
 
 void Mes::fill_Hamiltonian(std::function<double(double x, double y)> potential, std::function<bool(double x, double y)> Dirichlet){
 	Dirichlet_boundary = Dirichlet;
+	this->potential = potential;
 
 	// //zerowanie macierzy na poczatek
 	for (int k = 0; k < Np * Np; ++k) S[k] = 0;
@@ -445,7 +438,7 @@ void Mes::fill_S(double energy){
 
 	// the incident carriers for transport: filling the leads' matrices C and P (see Lent's paper)
 	for(int l = 0; l < no_leads; ++l){
-		leads[l].calc_Ni(energy);
+		leads[l].calc_Ni(energy, potential);
 		leads[l].fill_C();
 	}
 
@@ -469,7 +462,6 @@ void Mes::fill_S(double energy){
 		//~ if((fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2) && fabs(y_n[i]-ymin)>1e-2 && fabs(y_n[i]-ymax)>1e-2){
 		if(Dirichlet_boundary(x_n[i], y_n[i])){
 		//~ if(fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2){
-		//~ if((fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2 || fabs(y_n[i]-ymin)<1e-2 || fabs(y_n[i]-ymax)<1e-2) && fabs(x_n[i])>ymax){ // lead nie na caly scane
 			for (int j = 0; j < Np; ++j){
 				A[S_idx(j, i)] = 0; // the entire row is set to zero, only on the diagonal we set 1
 			}

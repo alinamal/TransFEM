@@ -87,6 +87,10 @@ private:
   
 	/// describes the entire edge with Dirichlet b.c.
     std::function<bool(double x, double y)> Dirichlet_boundary; 
+  
+	/// describes the potential profile; used e.g. in Lead::calc_Ni
+    std::function<double(double x, double y)> potential; 
+    
     /**
      * Assembles the free (source) terms. Must be called for each incident mode (it is done automatically inside fill_S)
      * 

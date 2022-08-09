@@ -53,12 +53,20 @@ std::complex<double> Lead::mode_fdm(double xi, int m){
 	return funsin;
 }
 
-void Lead::calc_dispersion_relation(){
+void Lead::calc_dispersion_relation(std::function<double(double x, double y)> potential){
 	int N = no_nodes;	
 	Eigen::MatrixXcd A = Eigen::MatrixXcd(N, N);
 	double dx = (ksi[no_nodes-1] - ksi[0]) / (N - 1);
 	double alpha = 1 / (2 * mass * dx * dx);
 	V = std::vector<double>(N, 0);
+	// filling the potential energy
+	for(int i = 0; i < N; i++){
+		//~ double ksi = ksi[0] + dx * i;
+		// watch out! it works only when N = no_nodes
+		double x = lok[i].x;
+		double y = lok[i].y;
+		V[i] = potential(x, y);
+	}
 	std::complex<double> j(0, 1);
 	 
 	std::ofstream file; 
@@ -92,9 +100,9 @@ void Lead::calc_dispersion_relation(){
 	file.close();
 }
 	
-void Lead::calculate_modes_fdm(double E){
+void Lead::calculate_modes_fdm(double E, std::function<double(double x, double y)> potential){
 	
-	calc_dispersion_relation();
+	//~ calc_dispersion_relation(potential);
 	
 	ki.clear();
 	xi_num.clear();
@@ -115,6 +123,12 @@ void Lead::calculate_modes_fdm(double E){
 	double alpha = 1 / (2 * mass * dx * dx);
 	// V vector should have been filled in MES::calc_Hamiltonian, here temporarily zeros
 	V = std::vector<double>(N, 0);
+	for(int i = 0; i < N; i++){
+		// watch out! it works only when N = no_nodes
+		double x = lok[i].x;
+		double y = lok[i].y;
+		V[i] = potential(x, y);
+	}
 	
 	// filling the A nad B matrix of generalized eigenproblem
 	for(int i = 0; i < 2 * N; i++){
@@ -164,13 +178,13 @@ void Lead::calculate_modes_fdm(double E){
 }
 
 	
-void Lead::calc_Ni(double E){
+void Lead::calc_Ni(double E, std::function<double(double x, double y)> potential){
 	double dx;
 	double xmin;
 	double xmax;
 	int num = 400; // the denser the better the result for the analytical modes ;) 
 	
-	double Ewell0 = M_PI*M_PI / 2 / mass / d/d;
+	double Ewell0 = M_PI*M_PI / 2 / mass / d / d;
 	no_modes = 0;
 	if(calculation_mode == Lead_mode::ANALYTICAL || calculation_mode == Lead_mode::FEM){
 		bool propagating = true;
@@ -182,7 +196,7 @@ void Lead::calc_Ni(double E){
 			double Ei = Ewell0 * m * m;
 			if(Ei > E) break;
 			double k = std::sqrt( 2 * mass * (E - Ei) ); // in 1/a0
-			std::cout << "Ei = " << Ei << ", k= " << k << std::endl;
+			//~ std::cout << "Ei = " << Ei << ", k= " << k << std::endl;
 			ki.push_back(k);
 			no_modes++;
 			m++;
@@ -197,7 +211,7 @@ void Lead::calc_Ni(double E){
 		
 	}
 	else if(calculation_mode == Lead_mode::FDM){
-		calculate_modes_fdm(E);
+		calculate_modes_fdm(E, potential);
 	}
 	
 	Nim.clear();
@@ -248,7 +262,6 @@ void Lead::calc_Ni(double E){
 				for(int j = 1; j<num - 1; j++){
 					double xi = xmin + dx * j;
 					integral += std::conj(std::invoke(mode_function, this, xi, m)) * std::invoke(mode_function, this, xi, n);
-					
 				}
 				integral += 0.5 * std::conj(std::invoke(mode_function, this, xmin, m)) * std::invoke(mode_function, this, xmin, n);
 				integral += 0.5 * std::conj(std::invoke(mode_function, this, xmax, m)) * std::invoke(mode_function, this, xmax, n);
