@@ -452,8 +452,7 @@ void Mes::fill_S(double energy){
 	for (int l = 0; l < no_leads; ++l){
 		for (int i = 0; i < leads[l].no_nodes; ++i){
 			for (int j = 0; j < leads[l].no_nodes; ++j){
-				A[S_idx(leads[l].lok[j].idx, leads[l].lok[i].idx)] += leads[l].C[i][j];  
-				//~ S[S_idx(leads[l].lok[i].idx, leads[l].lok[j].idx)] += leads[l].C[i][j];  
+				A[S_idx(leads[l].lok[j].idx, leads[l].lok[i].idx)] += leads[l].C[i][j]; 
 			}
 		}
 	}
@@ -471,7 +470,6 @@ void Mes::fill_S(double energy){
 		if(Dirichlet_boundary(x_n[i], y_n[i])){
 		//~ if(fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2){
 		//~ if((fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2 || fabs(y_n[i]-ymin)<1e-2 || fabs(y_n[i]-ymax)<1e-2) && fabs(x_n[i])>ymax){ // lead nie na caly scane
-		//~ if( ((fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2 || fabs(y_n[i]-100)<1e-2 || fabs(y_n[i]+100)<1e-2) && fabs(x_n[i])>100 ) || ((fabs(x_n[i]-100)<1e-2 || fabs(x_n[i]+100)<1e-2) && fabs(y_n[i])>100)){ //ksztalt krzyza
 			for (int j = 0; j < Np; ++j){
 				A[S_idx(j, i)] = 0; // the entire row is set to zero, only on the diagonal we set 1
 			}
