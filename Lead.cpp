@@ -67,7 +67,7 @@ void Lead::calc_dispersion_relation(std::function<double(double x, double y)> po
 		double y = lok[i].y;
 		V[i] = potential(x, y);
 	}
-	std::complex<double> j(0, 1);
+	std::complex<double> II(0, 1);
 	 
 	std::ofstream file; 
   	file.open("Ek.txt");
@@ -79,7 +79,7 @@ void Lead::calc_dispersion_relation(std::function<double(double x, double y)> po
 			}
 		}
 		for(int i = 0; i < N; i++){
-			A(i, i) = (4 * alpha + V[i]) - alpha * (std::exp(j * k * dx) + std::exp(-j * k * dx));
+			A(i, i) = (4 * alpha + V[i]) - alpha * (std::exp(II * k * dx) + std::exp(-II * k * dx));
 		}
 		A(0, 0) = 100;
 		A(N - 1, N - 1) = 100; // to ensure zeros at the edges

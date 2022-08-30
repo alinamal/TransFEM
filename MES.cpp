@@ -62,6 +62,21 @@ Mes::Mes(std::string filename){
 		ys[1] = y_n[idx2];
 		ys[2] = y_n[idx3];
 
+		// check if the nodes are clockwise 
+		double S = area( xs, ys);		
+		if( fabs(S)>1e-6 ){
+			if( S<0 ){ // if not, swap the 2 nodes
+				xs[1] = x_n[idx3];
+				xs[2] = x_n[idx2];
+				ys[1] = y_n[idx3];
+				ys[2] = y_n[idx2];
+				// and swap the indices
+				int tmp = idx2;
+				idx2 = idx3;
+				idx3 = tmp;
+			}
+		}
+		
 		Element tmp(xs, ys, idx1, idx2, idx3);
 		tmp.calc_jm();
 		elements.push_back(tmp);       
