@@ -30,12 +30,14 @@ Mes::Mes(std::string filename){
     Np = no_nodes;
     x_n = new double[Np];
     y_n = new double[Np];
+	flags = new int[Np];
     
     // copying the read nodes
     std::cout <<"Saving nodes:" << std::endl;
     for(int i=0;i<no_nodes;i++){
 		  x_n[i] = vnodes[i][0] * 100;
 		  y_n[i] = vnodes[i][1] * 100; // test wiekszego ukladu		
+		  flags[i] = vflags[i];	
     }     
     
     // write the nodes to file
@@ -125,6 +127,7 @@ Mes::~Mes(){
   delete [] V;
   delete [] F;
   delete [] psi;
+  delete [] flags;
 }
 
 
@@ -417,8 +420,7 @@ void Mes::save_mesh(){
 	file.close();
 }
 
-void Mes::fill_Hamiltonian(std::function<double(double x, double y)> potential, std::function<bool(double x, double y)> Dirichlet){
-	Dirichlet_boundary = Dirichlet;
+void Mes::fill_Hamiltonian(std::function<double(double x, double y)> potential){
 	this->potential = potential;
 
 	// //zerowanie macierzy na poczatek
@@ -447,6 +449,38 @@ void Mes::fill_Hamiltonian(std::function<double(double x, double y)> potential, 
 		}
 	}
 }
+
+void Mes::fill_Hamiltonian(std::function<double(double x, double y)> potential, std::function<bool(double x, double y)> Dirichlet){
+	Dirichlet_boundary = Dirichlet;
+	//~ this->potential = potential;
+
+	//~ // //zerowanie macierzy na poczatek
+	//~ for (int k = 0; k < Np * Np; ++k) S[k] = 0;
+	//~ for (int k = 0; k < Np * Np; ++k) O[k] = 0;
+	//~ for (int k = 0; k < Np * Np; ++k) V[k] = 0;
+	//~ for (int k = 0; k < Np; ++k) F[k] = 0;
+
+	//~ for (int m = 0; m < M; ++m){
+		//~ elements[m].fill_E();
+		//~ elements[m].fill_O();
+		//~ elements[m].fill_V(potential);
+		//~ elements[m].fill_vector();
+	//~ }
+
+	//~ // the matrices are assembled here, to be used for the system of equations
+	//~ for (int m = 0; m < elements.size(); ++m){
+		//~ for (int i = 0; i < NO_NODES; ++i){
+			//~ int p = elements[m].idxs[i];
+			//~ for (int j = 0; j < NO_NODES; ++j){
+				//~ int q = elements[m].idxs[j];
+				//~ S[S_idx(p, q)] += elements[m].E[i][j];
+				//~ O[S_idx(p, q)] += elements[m].O[i][j];
+				//~ V[S_idx(p, q)] += elements[m].V[i][j];
+			//~ }
+		//~ }
+	//~ }
+	fill_Hamiltonian(potential);
+}
 	
 void Mes::fill_S(double energy){
 	for (int k = 0; k < Np * Np; ++k) A[k] = S[k];
@@ -473,14 +507,21 @@ void Mes::fill_S(double energy){
 
 	// warunki brzegowe: zero na krawedzi, jak do rownania Laplace'a
 	for (int i = 0; i < Np; ++i){
-		//~ if( (fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2 || fabs(y_n[i]-ymin)<1e-2 || fabs(y_n[i]-ymax)<1e-2) && fabs(x_n[i])>50){
-		//~ if((fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2) && fabs(y_n[i]-ymin)>1e-2 && fabs(y_n[i]-ymax)>1e-2){
-		if(Dirichlet_boundary(x_n[i], y_n[i])){
-		//~ if(fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2){
-			for (int j = 0; j < Np; ++j){
-				A[S_idx(j, i)] = 0; // the entire row is set to zero, only on the diagonal we set 1
+		if(Dirichlet_boundary != nullptr){
+			if(Dirichlet_boundary(x_n[i], y_n[i])){
+				for (int j = 0; j < Np; ++j){
+					A[S_idx(j, i)] = 0; // the entire row is set to zero, only on the diagonal we set 1
+				}
+				A[S_idx(i, i)] = 1;
 			}
-			A[S_idx(i, i)] = 1;
+		}
+		else{
+			if(flags[i] == flag_d1){
+				for (int j = 0; j < Np; ++j){
+					A[S_idx(j, i)] = 0; // the entire row is set to zero, only on the diagonal we set 1
+				}
+				A[S_idx(i, i)] = 1;
+			}
 		}
 	}
 
@@ -499,12 +540,16 @@ void Mes::fill_F(int mode_in, int lead_idx){
 	}
 
 	// boundary conditions
-	for (int i = 0; i < Np; ++i){    
-		//~ if( ((fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2 || fabs(y_n[i]-100)<1e-2 || fabs(y_n[i]+100)<1e-2) && fabs(x_n[i])>100 ) || ((fabs(x_n[i]-100)<1e-2 || fabs(x_n[i]+100)<1e-2) && fabs(y_n[i])>99.9)){ //ksztalt krzyza
-		//~ if((fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2 || fabs(y_n[i]-ymin)<1e-2 || fabs(y_n[i]-ymax)<1e-2) && fabs(x_n[i])>ymax){ // nie na cala scane
-		if(Dirichlet_boundary(x_n[i], y_n[i])){
-			//~ if(fabs(x_n[i]-xmin)<1e-2 || fabs(x_n[i]-xmax)<1e-2){
-			F[i] = 0;// + 1 * y_n[i];// * y_n[i] * x_n[i] * x_n[i]/2000; // tu wejdzie wartosc napiecia na brzegu. Chwilowo dajemy po prostu kondensator plaski 
+	for (int i = 0; i < Np; ++i){ 
+		if(Dirichlet_boundary != nullptr){
+			if(Dirichlet_boundary(x_n[i], y_n[i])){
+				F[i] = 0;
+			}
+		}
+		else{
+			if(flags[i] == flag_d1){
+				F[i] = 0;// + 1 * y_n[i];// * y_n[i] * x_n[i] * x_n[i]/2000; // tu wejdzie wartosc napiecia na brzegu. Chwilowo dajemy po prostu kondensator plaski 
+			}
 		}
 	}
 }

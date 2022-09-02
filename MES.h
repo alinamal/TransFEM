@@ -39,9 +39,24 @@ public:
 	 * @param potential function describing the potential profile
 	 * @param Dirichlet function describing coordinates of the nodes with Dirichlet hard wall b.c.
 	 */
+	void fill_Hamiltonian(std::function<double(double x, double y)> potential); 
+	
+	/** 
+	 * Variant where nodes with Dirichlet b.c. are defined by hand; can be used when one wants to overwrite the b.c. defined in gmsh.
+	 * 
+	 * @param potential function describing the potential profile
+	 * @param Dirichlet function describing coordinates of the nodes with Dirichlet hard wall b.c.
+	 */
 	void fill_Hamiltonian(std::function<double(double x, double y)> potential, std::function<bool(double x, double y)> Dirichlet); 
 	
-	/// Assembles the system of equations (with the leads), needs to be called whenever energy changes
+	/**
+	 * Assembles the system of equations (with the leads), needs to be called whenever energy changes.
+	 * Sets the Dirichlet boundary condition (wave function = 0) at nodes 
+	 * (i) using user-defined logical function Dirichlet passed to fill_Hamiltonian.
+	 * (ii) or defined in gmsh .msh file; this option is used when no logical function Dirichlet is passed to fill_Hamiltonian.
+	 * 
+	 * @param energy Fermi energy
+	 */	
 	void fill_S(double energy); 
 	
 	/**
@@ -73,6 +88,7 @@ private:
 	/// coordinates of the nodes
 	double *x_n; 
 	double *y_n;
+	int *flags;
 	
 	std::complex<double> *S; /// global stiffness matrix 
 	std::complex<double> *O; /// global overlap matrix

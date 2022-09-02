@@ -79,31 +79,34 @@ void msh_read(std::string filename,double ** &vnodes,int * &vflags,int ** &velem
         sline >> tmp_int[0] >> tmp_int[1] >> tmp_int[2] >> tmp_int[3] >> tmp_int[4] ;
         
         switch( tmp_int[1] ){
-            case flag_d1:
-            case flag_d2: 
-            case flag_d3:
-            case flag_d4:
-            case flag_d5:
-            case flag_n1: 
-                if( tmp_int[4] == 1 ){
-                    sline >> tmp_int[5] ;
-                    flags[ tmp_int[5]-1 ] = tmp_int[2];
-                       if(msh_debug) cout << "F[" << i << "]=" << tmp_int[5] << endl;
-                }else if (tmp_int[4] == 2) {
-                       sline >> tmp_int[5]  >> tmp_int[6];
-                       flags[ tmp_int[5]-1 ] = tmp_int[2];
-                       flags[ tmp_int[6]-1 ] = tmp_int[2];
-                       if(msh_debug) cout << "F[" << i << "]=" << tmp_int[5] <<", " << tmp_int[6] << endl;
-				}else if (tmp_int[4] == 3){
-                       sline >> tmp_int[5]  >> tmp_int[7];
-                       if(msh_debug) cout << "F[" << i << "]=" << tmp_int[5] <<", " << tmp_int[6] << endl;
-                }else{
-                       cout << "<Blad> Czy plik z biliniowymi elementami?" << endl;
-                }
-                break;
-            //~ case flag_interior:
             case flag_point: break;
-            case flag_line: break;
+            case flag_line: //break;
+			switch( tmp_int[2] ){
+				case flag_d1:
+				case flag_d2: 
+				case flag_d3:
+				case flag_d4:
+				case flag_d5:
+				case flag_n1: 
+					if( tmp_int[4] == 1 ){
+						sline >> tmp_int[5] ;
+						flags[ tmp_int[5]-1 ] = tmp_int[2];
+						   if(msh_debug) cout << "F[" << i << "]=" << tmp_int[5] << endl;
+					}else if (tmp_int[4] == 2) {
+						   sline >> tmp_int[5]  >> tmp_int[6];
+						   flags[ tmp_int[5]-1 ] = tmp_int[2];
+						   flags[ tmp_int[6]-1 ] = tmp_int[2];
+						   if(msh_debug) cout << "F[" << i << "]=" << tmp_int[5] <<", " << tmp_int[6] << endl;
+					}else if (tmp_int[4] == 3){
+						   sline >> tmp_int[5]  >> tmp_int[7];
+						   if(msh_debug) cout << "F[" << i << "]=" << tmp_int[5] <<", " << tmp_int[6] << endl;
+					}else{
+						   cout << "<Blad> Czy plik z biliniowymi elementami?" << endl;
+					}
+					break;
+			}
+			break;
+            //~ case flag_interior:
             case flag_triangle:
                 sline >> tmp_int[5] >> tmp_int[6] >> tmp_int[7];// >> tmp_int[8] ; // zakomentowane bo to sa trojkaty teraz
                 for(int j=0;j<4;j++){
@@ -147,11 +150,10 @@ void msh_read(std::string filename,double ** &vnodes,int * &vflags,int ** &velem
         }
     }
 
-    
     if(msh_debug) {
         cout <<"Wezly:" <<endl;
         for(int i=0;i<no_nodes;i++){
-            cout << i <<": " << nodes[i][0] << ", " << nodes[i][1] << ", " << nodes[i][2] << ", " << flags[i] << endl;
+            cout << i <<": " << flags[i] << ", " << nodes[i][0] << ", " << nodes[i][1] << ", " << nodes[i][2] << ", " << flags[i] << endl;
         }
     }
 

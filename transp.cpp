@@ -27,6 +27,7 @@ void run_2_leads(){
 	double xmin = -100;
 
 	Mes syst("Meshes/KwadLow20.msh");
+	//~ Mes syst("Meshes/KwadLow20_tag.msh");
 	//~ Mes syst("Meshes/KwadLow10.msh"); //this is a denser mesh
 	syst.save_mesh();
 	syst.add_lead( 
@@ -55,11 +56,11 @@ void run_2_leads(){
   		[&](double x, double y) -> double { 
 			// here we define a QPC potential
 			return 0.1 * std::exp(-(std::pow((x - xmax)/20,2)+std::pow(y/(20),2)))
-				 + 0.1 * std::exp(-(std::pow((x - xmin)/20,2)+std::pow(y/(20),2))); },
+				 + 0.1 * std::exp(-(std::pow((x - xmin)/20,2)+std::pow(y/(20),2))); }
 			// here we define a finite potential well
 			//~ return 0.01 * (std::tanh(-(x + xmax/2)/5) + 
-						  //~ std::tanh((x - xmax/2)/5) + 2); },
-		[&](double x, double y){return fabs(x-xmin)<1e-2 || fabs(x-xmax)<1e-2;} // the side edges have Dirichlet b.c.
+						  //~ std::tanh((x - xmax/2)/5) + 2); }
+		,[&](double x, double y){return fabs(x-xmin)<1e-2 || fabs(x-xmax)<1e-2;} // the side edges have Dirichlet b.c.
 	);
 	
 	// scan the incident electron energy
